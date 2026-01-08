@@ -5,6 +5,7 @@ const connectDB = require("./config/db");
 const hotelRoutes = require("./routes/hotel.route");
 const transactionRoute = require("./routes/transaction.route");
 const uploadRoutes = require("./routes/upload.route");
+const pricingRoute = require("./routes/pricing.route");
 const startCronJobs = require("./cron/schedule");
 const startDynamicPricingCron = require("./cron/dynamicPricing.cron");
 
@@ -23,6 +24,7 @@ app.use("/api/rooms", require("./routes/room.route"));
 app.use("/api/hotels", hotelRoutes);
 app.use("/api/transactions", transactionRoute);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/pricing", pricingRoute);
 
 // GET /api/images/hotels - Lấy ảnh của tất cả khách sạn
 // app.get("/api/images/hotels", async (req, res) => {
