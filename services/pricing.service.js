@@ -1,22 +1,48 @@
-exports.calculateDynamicPrice = ({
-  basePrice,
-  occupancy,
-  daysToCheckin,
-  season = "NORMAL",
-}) => {
-  let price = basePrice;
+const PricingRule = require("../models/PricingRule");
 
-  // season
-  if (season === "HIGH") price *= 1.3;
-  if (season === "LOW") price *= 0.9;
+const calculateDynamicPrice = async ({ basePrice, context }) => {
+  let finalPrice = basePrice;
+  const appliedRules = [];
 
-  // occupancy
-  if (occupancy > 0.7) price *= 1.2;
-  else if (occupancy < 0.3) price *= 0.9;
+  const rules = await PricingRule.find({ isActive: true });
 
-  // time
-  if (daysToCheckin < 7) price *= 1.25;
-  else if (daysToCheckin < 14) price *= 1.1;
+  for (const rule of rules) {
+    let isApply = false;
 
-  return Math.round(price);
+    switch (rule.key) {
+      case "HIGH_OCCUPANCY":
+        isApply =
+          context.occupancyRate >= rule.conditionConfig.occupancyFrom;
+        break;
+
+      case "LOW_OCCUPANCY":
+        isApply =
+          context.occupancyRate <= rule.conditionConfig.occupancyTo;
+        break;
+
+      case "NEAR_CHECKIN":
+        isApply =
+          context.daysToCheckIn <= rule.conditionConfig.daysToCheckIn;
+        break;
+
+      case "WEEKEND":
+        isApply = context.isWeekend;
+        break;
+    }
+
+    if (isApply) {
+      finalPrice = finalPrice * (1 + rule.percentage / 100);
+      appliedRules.push(`${rule.name} (${rule.percentage}%)`);
+    }
+  }
+
+  return {
+    basePrice,
+    finalPrice: Math.round(finalPrice),
+    appliedRules,
+  };
+};
+
+module.exports = {
+  calculateDynamicPrice,
 };

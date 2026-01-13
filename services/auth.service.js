@@ -2,16 +2,23 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-exports.register = async ({ username, password }) => {
+exports.register = async ({ username, password, role = "user", hotel = null }) => {
   const existingUser = await User.findOne({ username });
   if (existingUser) throw new Error("User already exists");
 
   const hashed = await bcrypt.hash(password, 10);
-  const user = new User({ username, password: hashed });
-  await user.save();
 
+  const user = new User({
+    username,
+    password: hashed,
+    role,
+    hotel,
+  });
+
+  await user.save();
   return user;
 };
+
 
 exports.login = async ({ username, password }) => {
   const user = await User.findOne({ username });
