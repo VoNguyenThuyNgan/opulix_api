@@ -2,25 +2,19 @@ const mongoose = require("mongoose");
 
 const RoomSchema = new mongoose.Schema({
   title: String,
-
-  price: Number,          // base price
-  dynamicPrice: Number,   // current realtime price
-
+  price: Number, // base price
+  dynamicPrice: Number, // giá sau khi tính
   maxPeople: Number,
   desc: String,
   roomNumbers: [{ type: Number }],
 
-  // 🔥 NEW: lịch sử biến động giá
-  priceHistory: [
-    {
-      price: Number,
-      occupancy: Number,
-      calculatedAt: {
-        type: Date,
-        default: Date.now,
-      },
-    },
-  ],
+  dynamicPricingMeta: {
+    occupancyRate: Number,
+    appliedRules: [String],
+    calculatedAt: Date,
+  },
+
+  hotel: { type: mongoose.Schema.Types.ObjectId, ref: "Hotel" },
 });
 
 module.exports = mongoose.model("Room", RoomSchema);
